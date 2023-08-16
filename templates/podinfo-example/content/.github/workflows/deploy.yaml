@@ -53,17 +53,11 @@ jobs:
                 "commit": "'$GITHUB_SHA'",
                 "ref": "'$GITHUB_REF'"
             }'
+      - uses: score-spec/setup-score@v2
+        with:
+          file: score-humanitec
+          version: ${{ env.SCORE_HUMANITEC_VERSION }}
       - name: Deploy using Score
         run: |
-          wget https://github.com/score-spec/score-humanitec/releases/download/${{ env.SCORE_HUMANITEC_VERSION }}/score-humanitec_${{ env.SCORE_HUMANITEC_VERSION }}_linux_amd64.tar.gz
-          tar -xvzf ./score-humanitec_${{ env.SCORE_HUMANITEC_VERSION }}_linux_amd64.tar.gz
-
-          cat <<EOF > overrides.score.yaml
-          apiVersion: score.dev/v1b1
-          containers:
-            frontend:
-              image: $AWS_ECR/$IMAGE:$TAG
-          EOF
-
-          ./score-humanitec delta --env development --app ${{ env.APP_NAME }} --org="${{ secrets.HUMANITEC_ORG_ID }}" --token "${{ secrets.HUMANITEC_TOKEN }}" --deploy
+          score-humanitec delta --env development --app ${{ env.APP_NAME }} --org="${{ secrets.HUMANITEC_ORG_ID }}" --token "${{ secrets.HUMANITEC_TOKEN }}" --deploy --property containers.frontend.image=$AWS_ECR/$IMAGE:$TAG
 {% endraw %}
